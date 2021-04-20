@@ -386,7 +386,7 @@ QRZ,B,1000,-1,0,Q3,Q1,Mn,Q3,Perrin et al. 2015; Unpublished HVSR (C. Van Houtte)
 QTPS,D,350,0.95,90,Q3,Q1,Mw,Q3,"Unpublished HVSR (C. Van Houtte), McVerry 2011 at 940A"
 RCBS,B,800,0.5,8,Q3,Q3,Mw,Q2,Massey et al. 2016; Kaiser et al. 2014
 RCS1,D,270,1.1,100,Q3,Q3,I,Q3,Perrin et al. 2015
-RCS2,D,270,1,50,Q3,Q3,I,Q3,Perrin et al. 2015
+#RCS2,D,270,1,50,Q3,Q3,I,Q3,Perrin et al. 2015
 RDCS,C,270,0.22,20,Q3,Q2,Mw,Q3,Perrin et al. 2015; Unpublished HVSR (C. Van Houtte)
 REHS,E,155,>2,640,Q1,Q3,Ms,Q3,"Wotherspoon et al. 2014, 2015; Kaiser et al. 2013, Lee et al. 2015"
 RHBS,B,900,0.45,9,Q3,Q3,Mw,Q2,Massey et al. 2016; Kaiser et al. 2014
