@@ -18,6 +18,7 @@ Meta information for the GeoNet equipment network.
 * `dataloggers.csv` - Recording dataloggers
 * `connections.csv` - Datalogger and sensor connection details
 * `streams.csv` - Datalogger and recorder sampling configurations
+* `gains.csv` - Individual datalogger and sensor settings that may impact overall sensitivities
 
 * `cameras.csv` - Installed field cameras.
 * `doases.csv` - Installed field DOAS (Differential Optical Absorption Spectrometer) equipment.
@@ -212,6 +213,20 @@ A list of _datalogger_ sampling configurations for a given _station_ and recordi
 | _Triggered_ | Whether the stream represents</br>triggered recordings|_"yes"_ or _"no"_
 | _Start_ | Stream start time|
 | _Stop_ | Stream stop time|
+
+#### _GAINS_ ####
+ 
+A list of _datalogger_ installation times where gains need to be applied to correct for local conditions or sensor settings.
+
+| Field | Description | Units |
+| --- | --- | --- |
+| _Station_ | Datalogger or recording _Station_|
+| _Location_ | Recording or sensor site _Location_ |
+| _Component_ | The sensor component, as defined in the response configuration, which requires a gain adjustment, multiple components can be joined (e.g _"Z"_ or _"ZNE"_)
+| _Scale Factor_ | Scale, or gain factor, that the input signal is multiplied by prior to digitisation.
+| _Scale Bias_ | A value that was added to the signal prior to digitisation, a non-zero value indicates a polynomial style response may be required.
+| _Start_ | Gain start time|
+| _Stop_ | Gain stop time|
 
 ### CAMERA ###
 

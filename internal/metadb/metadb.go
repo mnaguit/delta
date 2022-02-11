@@ -16,6 +16,7 @@ type MetaDB struct {
 	// instrment configuration
 	connections
 	streams
+	gains
 
 	// base directory for raw meta files
 	base string
