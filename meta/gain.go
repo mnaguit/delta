@@ -11,7 +11,7 @@ import (
 const (
 	gainStation = iota
 	gainLocation
-	gainComponent
+	gainChannel
 	gainScaleFactor
 	gainScaleBias
 	gainStart
@@ -24,17 +24,17 @@ type Gain struct {
 	Span
 	Scale
 
-	Station   string
-	Location  string
-	Component string
+	Station  string
+	Location string
+	Channel  string
 }
 
 // Id returns a unique string which can be used for sorting or checking.
 func (g Gain) Id() string {
-	return strings.Join([]string{g.Station, g.Location, g.Component}, ":")
+	return strings.Join([]string{g.Station, g.Location, g.Channel}, ":")
 }
 
-// Less returns whether one gain sorts before another.
+// Less returns whether one Gain sorts before another.
 func (g Gain) Less(gain Gain) bool {
 	switch {
 	case g.Station < gain.Station:
@@ -45,9 +45,9 @@ func (g Gain) Less(gain Gain) bool {
 		return true
 	case g.Location > gain.Location:
 		return false
-	case g.Component < gain.Component:
+	case g.Channel < gain.Channel:
 		return true
-	case g.Component > gain.Component:
+	case g.Channel > gain.Channel:
 		return false
 	case g.Span.Start.Before(gain.Span.Start):
 		return true
@@ -56,10 +56,10 @@ func (g Gain) Less(gain Gain) bool {
 	}
 }
 
-// Components returns a sorted slice of single defined components.
-func (g Gain) Components() []string {
+// Channels returns a sorted slice of single defined components.
+func (g Gain) Channels() []string {
 	var comps []string
-	for _, c := range g.Component {
+	for _, c := range g.Channel {
 		comps = append(comps, string(c))
 	}
 	return comps
@@ -68,13 +68,13 @@ func (g Gain) Components() []string {
 // Gains returns a sorted slice of single Gain entries.
 func (g Gain) Gains() []Gain {
 	var gains []Gain
-	for _, c := range g.Component {
+	for _, c := range g.Channel {
 		gains = append(gains, Gain{
-			Span:      g.Span,
-			Scale:     g.Scale,
-			Station:   g.Station,
-			Location:  g.Location,
-			Component: string(c),
+			Span:     g.Span,
+			Scale:    g.Scale,
+			Station:  g.Station,
+			Location: g.Location,
+			Channel:  string(c),
 		})
 	}
 
@@ -93,7 +93,7 @@ func (s GainList) encode() [][]string {
 	data := [][]string{{
 		"Station",
 		"Location",
-		"Component",
+		"Channel",
 		"Scale Factor",
 		"Scale Bias",
 		"Start Date",
@@ -104,7 +104,7 @@ func (s GainList) encode() [][]string {
 		data = append(data, []string{
 			strings.TrimSpace(v.Station),
 			strings.TrimSpace(v.Location),
-			strings.TrimSpace(v.Component),
+			strings.TrimSpace(v.Channel),
 			strings.TrimSpace(v.factor),
 			strings.TrimSpace(v.bias),
 			v.Start.Format(DateTimeFormat),
@@ -125,11 +125,18 @@ func (s *GainList) decode(data [][]string) error {
 			var err error
 
 			var factor, bias float64
-			if factor, err = strconv.ParseFloat(d[gainScaleFactor], 64); err != nil {
-				return err
+			switch {
+			case d[gainScaleFactor] != "":
+				if factor, err = strconv.ParseFloat(d[gainScaleFactor], 64); err != nil {
+					return err
+				}
+			default:
+				factor = 1.0
 			}
-			if bias, err = strconv.ParseFloat(d[gainScaleBias], 64); err != nil {
-				return err
+			if d[gainScaleBias] != "" {
+				if bias, err = strconv.ParseFloat(d[gainScaleBias], 64); err != nil {
+					return err
+				}
 			}
 
 			var start, end time.Time
@@ -152,9 +159,9 @@ func (s *GainList) decode(data [][]string) error {
 					factor: strings.TrimSpace(d[gainScaleFactor]),
 					bias:   strings.TrimSpace(d[gainScaleBias]),
 				},
-				Station:   strings.TrimSpace(d[gainStation]),
-				Location:  strings.TrimSpace(d[gainLocation]),
-				Component: strings.TrimSpace(d[gainComponent]),
+				Station:  strings.TrimSpace(d[gainStation]),
+				Location: strings.TrimSpace(d[gainLocation]),
+				Channel:  strings.TrimSpace(d[gainChannel]),
 			})
 		}
 

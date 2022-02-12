@@ -19,6 +19,7 @@ Meta information for the GeoNet equipment network.
 * `connections.csv` - Datalogger and sensor connection details
 * `streams.csv` - Datalogger and recorder sampling configurations
 * `gains.csv` - Individual datalogger and sensor settings that may impact overall sensitivities
+* `calibrations.csv` - Individual sensor sensitivity values can be used rather than default values.
 
 * `cameras.csv` - Installed field cameras.
 * `doases.csv` - Installed field DOAS (Differential Optical Absorption Spectrometer) equipment.
@@ -222,11 +223,26 @@ A list of _datalogger_ installation times where gains need to be applied to corr
 | --- | --- | --- |
 | _Station_ | Datalogger or recording _Station_|
 | _Location_ | Recording or sensor site _Location_ |
-| _Component_ | The sensor component, as defined in the response configuration, which requires a gain adjustment, multiple components can be joined (e.g _"Z"_ or _"ZNE"_)
+| _Channel_ | The sensor channel, as defined in the response configuration, which requires a gain adjustment, multiple channels can be joined (e.g _"Z"_ or _"ZNE"_)
 | _Scale Factor_ | Scale, or gain factor, that the input signal is multiplied by prior to digitisation.
 | _Scale Bias_ | A value that was added to the signal prior to digitisation, a non-zero value indicates a polynomial style response may be required.
 | _Start_ | Gain start time|
 | _Stop_ | Gain stop time|
+
+#### _CALIBRATIONS_ ####
+ 
+A list of times where calibrated values of the _Sensor_ sensitivity are known and can be used to override the default _Model_ sensitivities.
+
+| Field | Description | Units |
+| --- | --- | --- |
+| _Make_ | Sensor make
+| _Model_ | Sensor model name
+| _Serial_ | Sensor serial number
+| _Component_ | The sensor component, as defined in the response configuration, which overrides the default sensitivity, this is either zero or a positive number, a blank value is interpreted as zero.
+| _Sensitivity_ | Sensitivity, or scale factor, that the input signal is multiplied by to convert to Volts.
+| _Frequency_ | Frequency at which the calibration value is correct for if appropriate.
+| _Start_ | Calibration start time|
+| _Stop_ | Calibration stop time|
 
 ### CAMERA ###
 

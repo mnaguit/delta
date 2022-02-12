@@ -30,7 +30,7 @@ func (g *gains) loadGains(base string) error {
 	return err
 }
 
-func (m *MetaDB) Gain(sta, loc, comp string, at time.Time) (*meta.Gain, error) {
+func (m *MetaDB) Gain(sta, loc, cha string, at time.Time) (*meta.Gain, error) {
 
 	if err := m.loadGains(m.base); err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (m *MetaDB) Gain(sta, loc, comp string, at time.Time) (*meta.Gain, error) {
 		if g.Location != loc {
 			continue
 		}
-		if g.Component != comp {
+		if g.Channel != cha {
 			continue
 		}
 		if g.Start.After(at) {

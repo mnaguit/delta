@@ -21,15 +21,6 @@ var testGains = map[string]func([]meta.Gain) func(t *testing.T){
 			for _, v := range installs {
 				for i := 0; i < len(v); i++ {
 					for j := i + 1; j < len(v); j++ {
-						if v[i].Station != v[j].Station {
-							continue
-						}
-						if v[i].Location != v[j].Location {
-							continue
-						}
-						if v[i].Component != v[j].Component {
-							continue
-						}
 						if v[i].End.Before(v[j].Start) {
 							continue
 						}
@@ -44,7 +35,7 @@ var testGains = map[string]func([]meta.Gain) func(t *testing.T){
 						}
 
 						t.Errorf("gain %s/%s has component %s overlap between %s and %s",
-							v[i].Station, v[i].Location, v[i].Component,
+							v[i].Station, v[i].Location, v[i].Channel,
 							v[i].Start.Format(meta.DateTimeFormat),
 							v[i].End.Format(meta.DateTimeFormat))
 					}
