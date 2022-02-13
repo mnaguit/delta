@@ -1025,11 +1025,11 @@ func TestList(t *testing.T) {
 							End:   time.Date(9999, time.January, 1, 0, 0, 0, 0, time.UTC),
 						},
 					},
-					Sensitivity: 2000.169,
+					Sensitivity: 2000.169 / 2.0,
 					Frequency:   10.0,
 					Component:   0,
 
-					sensitivity: "2000.169",
+					sensitivity: "2000.169/2.0",
 					frequency:   "10.0",
 				},
 			},

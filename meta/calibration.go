@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/GeoNet/delta/internal/expr"
 )
 
 const (
@@ -93,18 +95,18 @@ func (s *CalibrationList) decode(data [][]string) error {
 			var err error
 
 			var sens, freq float64
-			if sens, err = strconv.ParseFloat(d[calibrationSensitivity], 64); err != nil {
+			if sens, err = expr.ToFloat64(d[calibrationSensitivity]); err != nil {
 				return err
 			}
 			if d[calibrationFrequency] != "" {
-				if freq, err = strconv.ParseFloat(d[calibrationFrequency], 64); err != nil {
+				if freq, err = expr.ToFloat64(d[calibrationFrequency]); err != nil {
 					return err
 				}
 			}
 
 			var comp int
 			if d[calibrationComponent] != "" {
-				if comp, err = strconv.Atoi(d[calibrationComponent]); err != nil {
+				if comp, err = expr.ToInt(d[calibrationComponent]); err != nil {
 					return err
 				}
 			}

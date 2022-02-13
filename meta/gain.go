@@ -3,9 +3,10 @@ package meta
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/GeoNet/delta/internal/expr"
 )
 
 const (
@@ -127,14 +128,14 @@ func (s *GainList) decode(data [][]string) error {
 			var factor, bias float64
 			switch {
 			case d[gainScaleFactor] != "":
-				if factor, err = strconv.ParseFloat(d[gainScaleFactor], 64); err != nil {
+				if factor, err = expr.ToFloat64(d[gainScaleFactor]); err != nil {
 					return err
 				}
 			default:
 				factor = 1.0
 			}
 			if d[gainScaleBias] != "" {
-				if bias, err = strconv.ParseFloat(d[gainScaleBias], 64); err != nil {
+				if bias, err = expr.ToFloat64(d[gainScaleBias]); err != nil {
 					return err
 				}
 			}

@@ -218,6 +218,7 @@ A list of _datalogger_ sampling configurations for a given _station_ and recordi
 #### _GAINS_ ####
  
 A list of _datalogger_ installation times where gains need to be applied to correct for local conditions or sensor settings.
+For the scale factor and bias either a value can be given directly or an expression can be used if that makes it clearer where the number has come from.
 
 | Field | Description | Units |
 | --- | --- | --- |
@@ -232,6 +233,7 @@ A list of _datalogger_ installation times where gains need to be applied to corr
 #### _CALIBRATIONS_ ####
  
 A list of times where calibrated values of the _Sensor_ sensitivity are known and can be used to override the default _Model_ sensitivities.
+For the component, sensitivity, and frequency either a value can be given directly or an expression can be used if that is more readible.
 
 | Field | Description | Units |
 | --- | --- | --- |
