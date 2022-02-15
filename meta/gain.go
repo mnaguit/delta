@@ -12,6 +12,7 @@ import (
 const (
 	gainStation = iota
 	gainLocation
+	gainSubLocation
 	gainChannel
 	gainScaleFactor
 	gainScaleBias
@@ -26,9 +27,10 @@ type Gain struct {
 	Span
 	Scale
 
-	Station  string
-	Location string
-	Channel  string
+	Station     string
+	Location    string
+	SubLocation string
+	Channel     string
 }
 
 // Id returns a unique string which can be used for sorting or checking.
@@ -46,6 +48,10 @@ func (g Gain) Less(gain Gain) bool {
 	case g.Location < gain.Location:
 		return true
 	case g.Location > gain.Location:
+		return false
+	case g.SubLocation < gain.SubLocation:
+		return true
+	case g.SubLocation > gain.SubLocation:
 		return false
 	case g.Channel < gain.Channel:
 		return true
@@ -72,11 +78,12 @@ func (g Gain) Gains() []Gain {
 	var gains []Gain
 	for _, c := range g.Channel {
 		gains = append(gains, Gain{
-			Span:     g.Span,
-			Scale:    g.Scale,
-			Station:  g.Station,
-			Location: g.Location,
-			Channel:  string(c),
+			Span:        g.Span,
+			Scale:       g.Scale,
+			Station:     g.Station,
+			Location:    g.Location,
+			SubLocation: g.SubLocation,
+			Channel:     string(c),
 		})
 	}
 
@@ -87,14 +94,15 @@ func (g Gain) Gains() []Gain {
 
 type GainList []Gain
 
-func (s GainList) Len() int           { return len(s) }
-func (s GainList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s GainList) Less(i, j int) bool { return s[i].Less(s[j]) }
+func (g GainList) Len() int           { return len(g) }
+func (g GainList) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GainList) Less(i, j int) bool { return g[i].Less(g[j]) }
 
-func (s GainList) encode() [][]string {
+func (g GainList) encode() [][]string {
 	data := [][]string{{
 		"Station",
 		"Location",
+		"SubLocation",
 		"Channel",
 		"Scale Factor",
 		"Scale Bias",
@@ -102,10 +110,11 @@ func (s GainList) encode() [][]string {
 		"End Date",
 	}}
 
-	for _, v := range s {
+	for _, v := range g {
 		data = append(data, []string{
 			strings.TrimSpace(v.Station),
 			strings.TrimSpace(v.Location),
+			strings.TrimSpace(v.SubLocation),
 			strings.TrimSpace(v.Channel),
 			strings.TrimSpace(v.factor),
 			strings.TrimSpace(v.bias),
@@ -117,35 +126,40 @@ func (s GainList) encode() [][]string {
 	return data
 }
 
-func (s *GainList) decode(data [][]string) error {
+func (g *GainList) toFloat64(str string, def float64) (float64, error) {
+	switch s := strings.TrimSpace(str); {
+	case s != "":
+		return expr.ToFloat64(s)
+	default:
+		return def, nil
+	}
+}
+
+func (g *GainList) decode(data [][]string) error {
 	var gains []Gain
 	if len(data) > 1 {
 		for _, d := range data[1:] {
 			if len(d) != gainLast {
 				return fmt.Errorf("incorrect number of installed gain fields")
 			}
-			var err error
 
-			var factor, bias float64
-			switch {
-			case d[gainScaleFactor] != "":
-				if factor, err = expr.ToFloat64(d[gainScaleFactor]); err != nil {
-					return err
-				}
-			default:
-				factor = 1.0
-			}
-			if d[gainScaleBias] != "" {
-				if bias, err = expr.ToFloat64(d[gainScaleBias]); err != nil {
-					return err
-				}
-			}
-
-			var start, end time.Time
-			if start, err = time.Parse(DateTimeFormat, d[gainStart]); err != nil {
+			factor, err := g.toFloat64(d[gainScaleFactor], 1.0)
+			if err != nil {
 				return err
 			}
-			if end, err = time.Parse(DateTimeFormat, d[gainEnd]); err != nil {
+
+			bias, err := g.toFloat64(d[gainScaleBias], 0.0)
+			if err != nil {
+				return err
+			}
+
+			start, err := time.Parse(DateTimeFormat, d[gainStart])
+			if err != nil {
+				return err
+			}
+
+			end, err := time.Parse(DateTimeFormat, d[gainEnd])
+			if err != nil {
 				return err
 			}
 
@@ -161,26 +175,27 @@ func (s *GainList) decode(data [][]string) error {
 					factor: strings.TrimSpace(d[gainScaleFactor]),
 					bias:   strings.TrimSpace(d[gainScaleBias]),
 				},
-				Station:  strings.TrimSpace(d[gainStation]),
-				Location: strings.TrimSpace(d[gainLocation]),
-				Channel:  strings.TrimSpace(d[gainChannel]),
+				Station:     strings.TrimSpace(d[gainStation]),
+				Location:    strings.TrimSpace(d[gainLocation]),
+				SubLocation: strings.TrimSpace(d[gainSubLocation]),
+				Channel:     strings.TrimSpace(d[gainChannel]),
 			})
 		}
 
-		*s = GainList(gains)
+		*g = GainList(gains)
 	}
 
 	return nil
 }
 
 func LoadGains(path string) ([]Gain, error) {
-	var s []Gain
+	var g []Gain
 
-	if err := LoadList(path, (*GainList)(&s)); err != nil {
+	if err := LoadList(path, (*GainList)(&g)); err != nil {
 		return nil, err
 	}
 
-	sort.Sort(GainList(s))
+	sort.Sort(GainList(g))
 
-	return s, nil
+	return g, nil
 }

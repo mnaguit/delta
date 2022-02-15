@@ -222,13 +222,16 @@ For the scale factor and bias either a value can be given directly or an express
 
 | Field | Description | Units |
 | --- | --- | --- |
-| _Station_ | Datalogger or recording _Station_|
-| _Location_ | Recording or sensor site _Location_ |
-| _Channel_ | The sensor channel, as defined in the response configuration, which requires a gain adjustment, multiple channels can be joined (e.g _"Z"_ or _"ZNE"_)
-| _Scale Factor_ | Scale, or gain factor, that the input signal is multiplied by prior to digitisation.
-| _Scale Bias_ | A value that was added to the signal prior to digitisation, a non-zero value indicates a polynomial style response may be required.
+| _Station_ | Datalogger recording _Station_|
+| _Location_ | Recording sensor site _Location_ |
+| _SubLocation_ | Features _SubLocation_ if applicable |
+| _Channel_ | The sensor channel, as defined in the response configuration, which requires a gain adjustment, multiple channels can be joined (e.g _"Z"_ or _"ZNE"_).
+| _Scale Factor_ | Scale, or gain factor, that the input signal is multiplied by prior to digitisation, or for polynomial responses it is the factor used to convert Volts into the signal units. If this field is empty, it should be assumed to have a value of __1.0__ which in theory should have no impact.
+| _Scale Bias_ | An offset value that needs to be added to the signal prior to digitisation and indicates a polynomial response is expected, if this field is blank it is assumed that the value is __0.0__.
 | _Start_ | Gain start time|
 | _Stop_ | Gain stop time|
+
+For a second order polynomial response, the output is expected to be `Y = a * X + b` where `X` is normally the input voltage, and Y the corrected signal. The terms `a` and `b` are the factor and bias respectively. The gain adjustments (`a'`, `b'`) update this via `Y = (a * a') * X + (b + b')`
 
 #### _CALIBRATIONS_ ####
  
@@ -240,11 +243,14 @@ For the component, sensitivity, and frequency either a value can be given direct
 | _Make_ | Sensor make
 | _Model_ | Sensor model name
 | _Serial_ | Sensor serial number
-| _Component_ | The sensor component, as defined in the response configuration or elsewhere, which overrides the default values, a blank value is interpreted as pin zero.
-| _Sensitivity_ | Sensitivity, or scale factor, that the input signal is multiplied by to convert to Volts.
+| _Component_ | The sensor component, as defined in the response configuration or elsewhere, which overrides the default values, a blank value is interpreted as the first sensor component, or __"pin"__ zero.
+| _Scale Factor_ | Sensitivity, or scale factor, that the input signal is generally multiplied by to convert to Volts, or for polynomial responses the value used to convert Volts into the signal units. A blank value is expected to be read as __1.0__, an expicit value of zero is required to be entered if intended.
+| _Scale Bias_ | An offset, or scale bias, for polynomial responses that is added to the converted volts to give the signal values. If this field is blank it should be assumed that the value is __0.0__.
 | _Frequency_ | Frequency at which the calibration value is correct for if appropriate.
 | _Start_ | Calibration start time|
 | _Stop_ | Calibration stop time|
+
+For a second order polynomial response, the output is expected to be `Y = a * X + b` where `X` is normally the input voltage, and Y the corrected signal. The terms `a` and `b` are the factor and bias respectively. The gain adjustments (`a'`, `b'`) update this via `Y =  a' * X + b'`
 
 ### CAMERA ###
 

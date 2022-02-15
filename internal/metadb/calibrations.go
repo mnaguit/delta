@@ -30,7 +30,7 @@ func (c *calibrations) loadCalibrations(base string) error {
 	return err
 }
 
-func (m *MetaDB) Calibration(model, serial, comp string, at time.Time) (*meta.Calibration, error) {
+func (m *MetaDB) Calibration(model, serial string, comp int, at time.Time) (*meta.Calibration, error) {
 
 	if err := m.loadCalibrations(m.base); err != nil {
 		return nil, err

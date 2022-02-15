@@ -15,7 +15,8 @@ const (
 	calibrationModel
 	calibrationSerial
 	calibrationComponent
-	calibrationSensitivity
+	calibrationScaleFactor
+	calibrationScaleBias
 	calibrationFrequency
 	calibrationStart
 	calibrationEnd
@@ -27,28 +28,21 @@ const (
 type Calibration struct {
 	Install
 
-	sensitivity string
-	frequency   string
+	component string
+	factor    string
+	bias      string
+	frequency string
 
-	Sensitivity float64
+	ScaleFactor float64
+	ScaleBias   float64
 	Frequency   float64
 
-	Component string
+	Component int
 }
 
 // Id returns a unique string which can be used for sorting or checking.
 func (c Calibration) Id() string {
-	return strings.Join([]string{c.Make, c.Model, c.Serial, c.Component}, ":")
-}
-
-func (c Calibration) Pin() (int, bool) {
-	if i, err := strconv.Atoi(strings.TrimSpace(c.Component)); err == nil {
-		return i, true
-	}
-	if strings.TrimSpace(c.Component) == "" {
-		return 0, true
-	}
-	return 0, false
+	return strings.Join([]string{c.Make, c.Model, c.Serial, strconv.Itoa(c.Component)}, ":")
 }
 
 // Less returns whether one Calibration sorts before another.
@@ -68,29 +62,31 @@ func (s Calibration) Less(calibration Calibration) bool {
 // CalibrationList is a slice of Calibration types.
 type CalibrationList []Calibration
 
-func (s CalibrationList) Len() int           { return len(s) }
-func (s CalibrationList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s CalibrationList) Less(i, j int) bool { return s[i].Less(s[j]) }
+func (c CalibrationList) Len() int           { return len(c) }
+func (c CalibrationList) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c CalibrationList) Less(i, j int) bool { return c[i].Less(c[j]) }
 
-func (s CalibrationList) encode() [][]string {
+func (c CalibrationList) encode() [][]string {
 	data := [][]string{{
 		"Make",
 		"Model",
 		"Serial",
 		"Component",
-		"Sensitivity",
+		"Scale Factor",
+		"Scale Bias",
 		"Frequency",
 		"Start Date",
 		"End Date",
 	}}
 
-	for _, v := range s {
+	for _, v := range c {
 		data = append(data, []string{
 			strings.TrimSpace(v.Make),
 			strings.TrimSpace(v.Model),
 			strings.TrimSpace(v.Serial),
-			strings.TrimSpace(v.Component),
-			strings.TrimSpace(v.sensitivity),
+			strconv.Itoa(v.Component),
+			strings.TrimSpace(v.factor),
+			strings.TrimSpace(v.bias),
 			strings.TrimSpace(v.frequency),
 			v.Start.Format(DateTimeFormat),
 			v.End.Format(DateTimeFormat),
@@ -98,30 +94,60 @@ func (s CalibrationList) encode() [][]string {
 	}
 	return data
 }
-func (s *CalibrationList) decode(data [][]string) error {
+
+func (c *CalibrationList) toFloat64(str string, def float64) (float64, error) {
+	switch s := strings.TrimSpace(str); {
+	case s != "":
+		return expr.ToFloat64(s)
+	default:
+		return def, nil
+	}
+}
+
+func (c *CalibrationList) toInt(str string, def int) (int, error) {
+	switch s := strings.TrimSpace(str); {
+	case s != "":
+		return expr.ToInt(s)
+	default:
+		return def, nil
+	}
+}
+
+func (c *CalibrationList) decode(data [][]string) error {
 	var calibrations []Calibration
 	if len(data) > 1 {
 		for _, d := range data[1:] {
 			if len(d) != calibrationLast {
 				return fmt.Errorf("incorrect number of installed calibration fields")
 			}
-			var err error
 
-			var sens, freq float64
-			if sens, err = expr.ToFloat64(d[calibrationSensitivity]); err != nil {
+			factor, err := c.toFloat64(d[calibrationScaleFactor], 1.0)
+			if err != nil {
 				return err
 			}
-			if d[calibrationFrequency] != "" {
-				if freq, err = expr.ToFloat64(d[calibrationFrequency]); err != nil {
-					return err
-				}
-			}
 
-			var start, end time.Time
-			if start, err = time.Parse(DateTimeFormat, d[calibrationStart]); err != nil {
+			bias, err := c.toFloat64(d[calibrationScaleBias], 0.0)
+			if err != nil {
 				return err
 			}
-			if end, err = time.Parse(DateTimeFormat, d[calibrationEnd]); err != nil {
+
+			freq, err := c.toFloat64(d[calibrationFrequency], 0.0)
+			if err != nil {
+				return err
+			}
+
+			comp, err := c.toInt(d[calibrationComponent], 0)
+			if err != nil {
+				return err
+			}
+
+			start, err := time.Parse(DateTimeFormat, d[calibrationStart])
+			if err != nil {
+				return err
+			}
+
+			end, err := time.Parse(DateTimeFormat, d[calibrationEnd])
+			if err != nil {
 				return err
 			}
 
@@ -137,31 +163,34 @@ func (s *CalibrationList) decode(data [][]string) error {
 						End:   end,
 					},
 				},
-				Component: strings.TrimSpace(d[calibrationComponent]),
+				Component: comp,
 
-				Sensitivity: sens,
+				ScaleFactor: factor,
+				ScaleBias:   bias,
 				Frequency:   freq,
 
-				sensitivity: strings.TrimSpace(d[calibrationSensitivity]),
-				frequency:   strings.TrimSpace(d[calibrationFrequency]),
+				component: strings.TrimSpace(d[calibrationComponent]),
+				factor:    strings.TrimSpace(d[calibrationScaleFactor]),
+				bias:      strings.TrimSpace(d[calibrationScaleBias]),
+				frequency: strings.TrimSpace(d[calibrationFrequency]),
 			})
 		}
 	}
 
-	*s = CalibrationList(calibrations)
+	*c = CalibrationList(calibrations)
 
 	return nil
 }
 
 // LoadCalibrations reads a CSV formatted file and returns a slice of Calibration types.
 func LoadCalibrations(path string) ([]Calibration, error) {
-	var s []Calibration
+	var c []Calibration
 
-	if err := LoadList(path, (*CalibrationList)(&s)); err != nil {
+	if err := LoadList(path, (*CalibrationList)(&c)); err != nil {
 		return nil, err
 	}
 
-	sort.Sort(CalibrationList(s))
+	sort.Sort(CalibrationList(c))
 
-	return s, nil
+	return c, nil
 }
