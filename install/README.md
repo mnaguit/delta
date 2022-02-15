@@ -217,7 +217,7 @@ A list of _datalogger_ sampling configurations for a given _station_ and recordi
 
 #### _GAINS_ ####
  
-A list of _datalogger_ installation times where gains need to be applied to correct for local conditions or sensor settings.
+A list of installation times where gains need to be applied to correct for local conditions, datalogger or sensor settings.
 For the scale factor and bias either a value can be given directly or an expression can be used if that makes it clearer where the number has come from.
 
 | Field | Description | Units |
@@ -240,7 +240,7 @@ For the component, sensitivity, and frequency either a value can be given direct
 | _Make_ | Sensor make
 | _Model_ | Sensor model name
 | _Serial_ | Sensor serial number
-| _Component_ | The sensor component, as defined in the response configuration, which overrides the default sensitivity, this is either zero or a positive number, a blank value is interpreted as zero.
+| _Component_ | The sensor component, as defined in the response configuration or elsewhere, which overrides the default values, a blank value is interpreted as pin zero.
 | _Sensitivity_ | Sensitivity, or scale factor, that the input signal is multiplied by to convert to Volts.
 | _Frequency_ | Frequency at which the calibration value is correct for if appropriate.
 | _Start_ | Calibration start time|

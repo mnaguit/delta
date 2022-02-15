@@ -22,6 +22,8 @@ const (
 	calibrationLast
 )
 
+// Calibration defines times where sensor scaling or offsets are needed, these will be overwrite the
+// existing values, i.e. A + BX => A' + B' X, where A' and B' are the given bias and scaling factors.
 type Calibration struct {
 	Install
 
@@ -31,12 +33,22 @@ type Calibration struct {
 	Sensitivity float64
 	Frequency   float64
 
-	Component int
+	Component string
 }
 
 // Id returns a unique string which can be used for sorting or checking.
 func (c Calibration) Id() string {
-	return strings.Join([]string{c.Make, c.Model, c.Serial, strconv.Itoa(c.Component)}, ":")
+	return strings.Join([]string{c.Make, c.Model, c.Serial, c.Component}, ":")
+}
+
+func (c Calibration) Pin() (int, bool) {
+	if i, err := strconv.Atoi(strings.TrimSpace(c.Component)); err == nil {
+		return i, true
+	}
+	if strings.TrimSpace(c.Component) == "" {
+		return 0, true
+	}
+	return 0, false
 }
 
 // Less returns whether one Calibration sorts before another.
@@ -53,6 +65,7 @@ func (s Calibration) Less(calibration Calibration) bool {
 	}
 }
 
+// CalibrationList is a slice of Calibration types.
 type CalibrationList []Calibration
 
 func (s CalibrationList) Len() int           { return len(s) }
@@ -76,7 +89,7 @@ func (s CalibrationList) encode() [][]string {
 			strings.TrimSpace(v.Make),
 			strings.TrimSpace(v.Model),
 			strings.TrimSpace(v.Serial),
-			strconv.Itoa(v.Component),
+			strings.TrimSpace(v.Component),
 			strings.TrimSpace(v.sensitivity),
 			strings.TrimSpace(v.frequency),
 			v.Start.Format(DateTimeFormat),
@@ -104,13 +117,6 @@ func (s *CalibrationList) decode(data [][]string) error {
 				}
 			}
 
-			var comp int
-			if d[calibrationComponent] != "" {
-				if comp, err = expr.ToInt(d[calibrationComponent]); err != nil {
-					return err
-				}
-			}
-
 			var start, end time.Time
 			if start, err = time.Parse(DateTimeFormat, d[calibrationStart]); err != nil {
 				return err
@@ -131,9 +137,10 @@ func (s *CalibrationList) decode(data [][]string) error {
 						End:   end,
 					},
 				},
+				Component: strings.TrimSpace(d[calibrationComponent]),
+
 				Sensitivity: sens,
 				Frequency:   freq,
-				Component:   comp,
 
 				sensitivity: strings.TrimSpace(d[calibrationSensitivity]),
 				frequency:   strings.TrimSpace(d[calibrationFrequency]),
@@ -146,6 +153,7 @@ func (s *CalibrationList) decode(data [][]string) error {
 	return nil
 }
 
+// LoadCalibrations reads a CSV formatted file and returns a slice of Calibration types.
 func LoadCalibrations(path string) ([]Calibration, error) {
 	var s []Calibration
 

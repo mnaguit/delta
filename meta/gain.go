@@ -20,7 +20,8 @@ const (
 	gainLast
 )
 
-// Gain defines times where sensor scaling or offsets are needed.
+// Gain defines times where sensor installation scaling or offsets are needed, these will be applied to the
+// existing values, i.e. A + BX => A + A' + (B * B') X, where A' and B' are the given bias and scaling factors.
 type Gain struct {
 	Span
 	Scale

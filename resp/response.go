@@ -208,24 +208,15 @@ func (r *ResponseStage) AppyGain(factor, bias float64) bool {
 	}
 }
 
-func (r *ResponseStage) Calibrate(factor, bias float64) bool {
+func (r *ResponseStage) Calibrate(factor, freq float64) bool {
 	switch v := r.StageSet.(type) {
 	case Polynomial:
 		switch len(v.Coefficients) {
-		case 1:
-			// only a bias is given
-			v.Coefficients = []Coefficient{
-				{
-					Value: bias,
-				},
-			}
-			r.StageSet = v
-			return true
 		case 2:
-			// a bias and a factor is given
+			// a bias and a factor is given, keep the bias
 			v.Coefficients = []Coefficient{
 				{
-					Value: bias,
+					Value: v.Coefficients[0].Value,
 				}, {
 					Value: factor,
 				},
@@ -242,6 +233,7 @@ func (r *ResponseStage) Calibrate(factor, bias float64) bool {
 	case PAZ:
 		// only update the stage gain
 		r.Gain = factor
+		r.Frequency = freq
 		return true
 	default:
 		return false

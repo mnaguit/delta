@@ -1027,7 +1027,7 @@ func TestList(t *testing.T) {
 					},
 					Sensitivity: 2000.169 / 2.0,
 					Frequency:   10.0,
-					Component:   0,
+					Component:   "0",
 
 					sensitivity: "2000.169/2.0",
 					frequency:   "10.0",
